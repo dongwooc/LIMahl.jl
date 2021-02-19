@@ -31,10 +31,9 @@ struct LineModel
     Tmean::Unitful.Quantity
     bmean::Float64
     Pshot::Unitful.Quantity
-    Pline::Function
     function LineModel(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin,Mhmax,nM,LofM,bofM_func=tinker10bM)
-        Mhmin_Msun,Mhmax_Msun,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot,Pline = LineModel_calc(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin,Mhmax,nM,LofM,bofM_func)
-        new(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin_Msun,Mhmax_Msun,nM,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot,Pline)
+        Mhmin_Msun,Mhmax_Msun,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot = LineModel_calc(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin,Mhmax,nM,LofM,bofM_func)
+        new(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin_Msun,Mhmax_Msun,nM,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot)
     end
 end
 
@@ -64,6 +63,9 @@ function LineModel_calc(νrest::Unitful.Quantity,νobs::Unitful.Quantity,cosmo_m
     Tmean = Unitful.uconvert(Unitful.µK,CLT / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval))
     bmean = Unitful.uconvert(Unitful.µK,CLT / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval.*bofM_eval))/Tmean
     Pshot = Unitful.uconvert(Unitful.µK^2 * UnitfulAstro.Mpc^3,CLT^2 / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval.^2))
-    Pline = k->Pshot+(Tmean*bmean)^2*Pk(k) * UnitfulAstro.Mpc^3
-    Mhmin_Msun,Mhmax_Msun,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot,Pline
+    Mhmin_Msun,Mhmax_Msun,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot
+end
+
+function Pline_realspace(l::LineModel,k::Unitful.Quantity)
+    l.Pshot+(l.Tmean*l.bmean)^2*l.Pk(Unitful.uconvert(Unitful.NoUnits,k*UnitfulAstro.Mpc)) * UnitfulAstro.Mpc^3
 end

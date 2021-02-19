@@ -1,6 +1,6 @@
 module LIMahl
 using DoubleExponentialFormulas
-using MatterPower
+#using MatterPower
 using HaloMF
 using Cosmology, QuadGK
 using Unitful, UnitfulAstro

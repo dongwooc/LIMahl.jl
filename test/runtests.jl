@@ -9,4 +9,6 @@ using Test
     @test isapprox(testmodel.Pk(0.01035), 8.93e3, rtol=0.03)
     @test isapprox(testmodel.Tmean, 15.283 * Unitful.μK, rtol=0.03)
     @test isapprox(testmodel.Pshot, 17539. * Unitful.μK^2*UnitfulAstro.Mpc^3, rtol=0.03)
+    @test isapprox(testmodel.bmean, 1.93, rtol=0.03)
+    @test isapprox(LIMahl.Pline_realspace(testmodel,0.01035/UnitfulAstro.Mpc), 7.8e6 * Unitful.μK^2*UnitfulAstro.Mpc^3, rtol=0.03)
 end
