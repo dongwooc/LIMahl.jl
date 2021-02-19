@@ -1,0 +1,24 @@
+name = "LIMahl"
+uuid = "82a33f8c-9367-41f0-b594-b3ec6c94c3fd"
+authors = ["Dongwoo Chung"]
+version = "0.0.42"
+
+[deps]
+Cosmology = "76746363-e552-5dba-9a5a-cef6fa9cc5ab"
+DoubleExponentialFormulas = "eb426421-6452-4132-80ef-4b100a757ac5"
+HaloMF = "0e139a23-195b-4aec-b8fc-e9aa4361bc8d"
+MatterPower = "743831d1-0e6a-4e86-a0c4-1a098a68aca3"
+NumericalIntegration = "e7bfaba1-d571-5449-8927-abc22e82249b"
+QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

@@ -5,7 +5,7 @@ using HaloMF
 using Cosmology, QuadGK
 using Unitful, UnitfulAstro
 using NumericalIntegration
-export pk_from_sigma8
+export LineModel
 include("CosmologyExtensions.jl")
 include("lim_realspace.jl")
 end
