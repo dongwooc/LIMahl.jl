@@ -2,7 +2,7 @@
     functions to find the real-space line-intensity power spectrum
 """
 
-struct LineModel
+struct LineModel{F<:Function}
     νrest::Unitful.Quantity
     νobs::Unitful.Quantity
     cosmo_model::Cosmology.AbstractCosmology
@@ -18,7 +18,7 @@ struct LineModel
     hmf_σ2::Vector{Float64}
     hmf_R::Vector{Float64}
     ρm::Float64
-    Pk::Function
+    Pk::F
     hmf_dlnσ2dlnR::Vector{Float64}
     hmf_lnν::Vector{Float64}
     hmf_dndlnM::Vector{Float64}
@@ -28,12 +28,13 @@ struct LineModel
     LofM_func::Function
     LofM::Vector{Unitful.Quantity}
     CLT::Unitful.Quantity
-    Tmean::Unitful.Quantity
+    Tmean_µK::Float64
     bmean::Float64
-    Pshot::Unitful.Quantity
+    Pshot_µK2_Mpc3::Float64
     function LineModel(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin,Mhmax,nM,LofM,bofM_func=tinker10bM)
         Mhmin_Msun,Mhmax_Msun,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot = LineModel_calc(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin,Mhmax,nM,LofM,bofM_func)
-        new(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin_Msun,Mhmax_Msun,nM,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot)
+        F = typeof(Pk)
+        new{F}(νrest,νobs,cosmo_model,cosmo_ns,cosmo_σ8,cosmo_Ωb,cosmo_Tcmb,Mhmin_Msun,Mhmax_Msun,nM,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot)
     end
 end
 
@@ -60,12 +61,12 @@ function LineModel_calc(νrest::Unitful.Quantity,νobs::Unitful.Quantity,cosmo_m
     LofM_eval = LofM(Mh_range.*UnitfulAstro.Msun)
     bofM_eval = bofM_func.(lnν)
     CLT = Unitful.uconvert(Unitful.µK*UnitfulAstro.Mpc^3/UnitfulAstro.Lsun,3.12e31*UnitfulAstro.Mpc^2*Unitful.µK*Unitful.km/Unitful.s^4/UnitfulAstro.Lsun*(1+z)^2/(νrest^3*Cosmology.H(cosmo_model,z)))
-    Tmean = Unitful.uconvert(Unitful.µK,CLT / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval))
-    bmean = Unitful.uconvert(Unitful.µK,CLT / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval.*bofM_eval))/Tmean
-    Pshot = Unitful.uconvert(Unitful.µK^2 * UnitfulAstro.Mpc^3,CLT^2 / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval.^2))
+    Tmean = Unitful.uconvert(Unitful.NoUnits,CLT / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval) / Unitful.µK)
+    bmean = Unitful.uconvert(Unitful.NoUnits,CLT / UnitfulAstro.Mpc^3 * integrate(Mh_range,hmf_dndM.*LofM_eval.*bofM_eval) / Unitful.µK)/Tmean
+    Pshot = Unitful.uconvert(Unitful.NoUnits,CLT^2 / UnitfulAstro.Mpc^6 * integrate(Mh_range,hmf_dndM.*LofM_eval.^2) / Unitful.µK^2)
     Mhmin_Msun,Mhmax_Msun,Mh_range,z,hmf_σ2,R,ρm,Pk,hmf_dlnσ2dlnR,lnν,hmf_dndlnM,hmf_dndM,bofM_func,bofM_eval,LofM,LofM_eval,CLT,Tmean,bmean,Pshot
 end
 
 function Pline_realspace(l::LineModel,k::Unitful.Quantity)
-    l.Pshot+(l.Tmean*l.bmean)^2*l.Pk(Unitful.uconvert(Unitful.NoUnits,k*UnitfulAstro.Mpc)) * UnitfulAstro.Mpc^3
+    (l.Pshot_µK2_Mpc3+(l.Tmean_µK*l.bmean)^2*l.Pk(Unitful.uconvert(Unitful.NoUnits,k*UnitfulAstro.Mpc))) * Unitful.µK^2 * UnitfulAstro.Mpc^3
 end
